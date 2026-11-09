@@ -17,13 +17,13 @@ enum TabBarPorRol {
             pestanas = [
                 envolver(pendiente("Resumen"), "Resumen", "chart.bar.fill"),
                 envolver(pendiente("Ventas del equipo"), "Ventas", "list.bullet.rectangle.fill"),
-                envolver(pendiente("Productos"), "Productos", "shippingbox.fill"),
+                envolver(ProductosViewController(), "Productos", "shippingbox.fill"),
                 envolver(pendiente("Clientes"), "Clientes", "person.2.fill"),
                 envolver(CuentaViewController(), "Cuenta", "person.crop.circle.fill")
             ]
         } else {
             pestanas = [
-                envolver(pendiente("Productos"), "Productos", "shippingbox.fill"),
+                envolver(ProductosViewController(), "Productos", "shippingbox.fill"),
                 envolver(pendiente("Clientes"), "Clientes", "person.2.fill"),
                 envolver(pendiente("Nueva venta"), "Venta", "cart.fill"),
                 envolver(pendiente("Mis ventas"), "Mis ventas", "list.bullet.rectangle.fill"),
