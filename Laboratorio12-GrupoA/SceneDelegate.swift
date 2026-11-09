@@ -50,6 +50,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
 
+    // MARK: - Navegación entre Login y pestañas
+
+    /// Abre el UITabBarController con las pestañas del rol de la sesión.
+    func mostrarPestanas() {
+        guard let usuario = Sesion.compartida.usuarioActual else { return }
+        cambiarRaiz(TabBarPorRol.crear(para: usuario))
+    }
+
+    /// Vuelve a la pantalla inicial del Storyboard (Login).
+    func mostrarLogin() {
+        guard let login = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController() else { return }
+        cambiarRaiz(login)
+    }
+
+    private func cambiarRaiz(_ pantalla: UIViewController) {
+        guard let window else { return }
+        window.rootViewController = pantalla
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
+    }
 
 }
 
