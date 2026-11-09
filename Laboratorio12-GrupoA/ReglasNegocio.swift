@@ -103,3 +103,63 @@ enum OperacionesVenta {
         return venta
     }
 }
+
+// MARK: - Filtros de ventas con NSPredicate
+
+/// Segmentado Todas / Hoy / Mes (A6, A7).
+enum PeriodoVenta: Int, CaseIterable {
+    case todas, hoy, mes
+
+    var titulo: String {
+        switch self {
+        case .todas: return "Todas"
+        case .hoy: return "Hoy"
+        case .mes: return "Mes"
+        }
+    }
+
+    /// Rango [inicio, fin) del periodo; nil para "Todas".
+    func rango(referencia: Date = Date(), calendario: Calendar = .current) -> (inicio: Date, fin: Date)? {
+        switch self {
+        case .todas:
+            return nil
+        case .hoy:
+            let inicio = calendario.startOfDay(for: referencia)
+            return (inicio, calendario.date(byAdding: .day, value: 1, to: inicio)!)
+        case .mes:
+            let inicio = calendario.date(from: calendario.dateComponents([.year, .month], from: referencia))!
+            return (inicio, calendario.date(byAdding: .month, value: 1, to: inicio)!)
+        }
+    }
+
+    /// Predicate por fechas: fecha >= inicio AND fecha < fin.
+    func predicado(referencia: Date = Date()) -> NSPredicate? {
+        guard let rango = rango(referencia: referencia) else { return nil }
+        return NSPredicate(format: "fecha >= %@ AND fecha < %@", rango.inicio as NSDate, rango.fin as NSDate)
+    }
+}
+
+enum FiltroVentas {
+    /// Combina los filtros: vendedor (relación), periodo (fechas), cliente (búsqueda) y solo no anuladas.
+    static func pedido(vendedor: Usuario?, periodo: PeriodoVenta, cliente texto: String = "",
+                       soloNoAnuladas: Bool = false, referencia: Date = Date()) -> NSFetchRequest<Venta> {
+        let pedido = Venta.fetchRequest()
+        var condiciones: [NSPredicate] = []
+        if let vendedor {
+            condiciones.append(NSPredicate(format: "vendedor == %@", vendedor))
+        }
+        if let porFecha = periodo.predicado(referencia: referencia) {
+            condiciones.append(porFecha)
+        }
+        let busqueda = texto.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !busqueda.isEmpty {
+            condiciones.append(NSPredicate(format: "cliente.nombre CONTAINS[cd] %@", busqueda))
+        }
+        if soloNoAnuladas {
+            condiciones.append(NSPredicate(format: "anulada == NO"))
+        }
+        pedido.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: condiciones)
+        pedido.sortDescriptors = [NSSortDescriptor(key: "fecha", ascending: false)]
+        return pedido
+    }
+}
