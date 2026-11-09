@@ -92,28 +92,20 @@ enum DatosIniciales {
     private static func crearVenta(diasAtras: Int, cantidad: Int64, producto: Producto, cliente: Cliente,
                                    vendedor: Usuario, anulada: Bool = false, motivo: String? = nil,
                                    en contexto: NSManagedObjectContext) {
-        let esVIP = cliente.categoriaCalculada == .vip
-
-        let subtotal = redondear(Double(cantidad) * producto.precio)
-        let descuento = esVIP ? redondear(subtotal * 0.10) : 0
-        let igv = redondear((subtotal - descuento) * 0.18)
-        let total = redondear(subtotal - descuento + igv)
+        let calculo = CalculoVenta(cantidad: cantidad, precioUnitario: producto.precio,
+                                   categoria: cliente.categoriaCalculada)
 
         let v = Venta(context: contexto)
         v.fecha = Calendar.current.date(byAdding: .day, value: -diasAtras, to: Date())
         v.cantidad = cantidad
         v.precioUnitario = producto.precio
-        v.descuento = descuento
-        v.igv = igv
-        v.total = total
+        v.descuento = calculo.descuento
+        v.igv = calculo.igv
+        v.total = calculo.total
         v.anulada = anulada
         v.motivoAnulacion = motivo
         v.producto = producto
         v.cliente = cliente
         v.vendedor = vendedor
-    }
-
-    private static func redondear(_ valor: Double) -> Double {
-        (valor * 100).rounded() / 100
     }
 }

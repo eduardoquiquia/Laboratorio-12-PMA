@@ -25,7 +25,7 @@ enum TabBarPorRol {
             pestanas = [
                 envolver(ProductosViewController(), "Productos", "shippingbox.fill"),
                 envolver(ClientesViewController(), "Clientes", "person.2.fill"),
-                envolver(pendiente("Nueva venta"), "Venta", "cart.fill"),
+                envolver(NuevaVentaViewController(), "Venta", "cart.fill"),
                 envolver(pendiente("Mis ventas"), "Mis ventas", "list.bullet.rectangle.fill"),
                 envolver(CuentaViewController(), "Cuenta", "person.crop.circle.fill")
             ]
