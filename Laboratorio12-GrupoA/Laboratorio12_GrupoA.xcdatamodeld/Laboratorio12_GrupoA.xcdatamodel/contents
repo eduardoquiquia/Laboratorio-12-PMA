@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
+    <entity name="Cliente" representedClassName="Cliente" syncable="YES" codeGenerationType="class">
+        <attribute name="documento" attributeType="String"/>
+        <attribute name="nombre" attributeType="String"/>
+        <relationship name="ventas" optional="YES" toMany="YES" deletionRule="Deny" destinationEntity="Venta" inverseName="cliente" inverseEntity="Venta"/>
+    </entity>
+    <entity name="Producto" representedClassName="Producto" syncable="YES" codeGenerationType="class">
+        <attribute name="categoria" attributeType="String"/>
+        <attribute name="nombre" attributeType="String"/>
+        <attribute name="precio" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="stock" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="ventas" optional="YES" toMany="YES" deletionRule="Deny" destinationEntity="Venta" inverseName="producto" inverseEntity="Venta"/>
+    </entity>
+    <entity name="Usuario" representedClassName="Usuario" syncable="YES" codeGenerationType="class">
+        <attribute name="clave" attributeType="String"/>
+        <attribute name="nombre" attributeType="String"/>
+        <attribute name="rol" attributeType="String"/>
+        <attribute name="usuario" attributeType="String"/>
+        <relationship name="ventas" optional="YES" toMany="YES" deletionRule="Deny" destinationEntity="Venta" inverseName="vendedor" inverseEntity="Venta"/>
+    </entity>
+    <entity name="Venta" representedClassName="Venta" syncable="YES" codeGenerationType="class">
+        <attribute name="anulada" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="cantidad" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="descuento" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="fecha" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="igv" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="motivoAnulacion" optional="YES" attributeType="String"/>
+        <attribute name="precioUnitario" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="total" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="cliente" maxCount="1" deletionRule="Nullify" destinationEntity="Cliente" inverseName="ventas" inverseEntity="Cliente"/>
+        <relationship name="producto" maxCount="1" deletionRule="Nullify" destinationEntity="Producto" inverseName="ventas" inverseEntity="Producto"/>
+        <relationship name="vendedor" maxCount="1" deletionRule="Nullify" destinationEntity="Usuario" inverseName="ventas" inverseEntity="Usuario"/>
+    </entity>
+</model>
