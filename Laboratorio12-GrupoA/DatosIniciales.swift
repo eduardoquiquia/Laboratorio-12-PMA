@@ -92,10 +92,7 @@ enum DatosIniciales {
     private static func crearVenta(diasAtras: Int, cantidad: Int64, producto: Producto, cliente: Cliente,
                                    vendedor: Usuario, anulada: Bool = false, motivo: String? = nil,
                                    en contexto: NSManagedObjectContext) {
-        let compradoAntes = (cliente.ventas as? Set<Venta> ?? [])
-            .filter { !$0.anulada }
-            .reduce(0) { $0 + $1.total }
-        let esVIP = compradoAntes >= 5000
+        let esVIP = cliente.categoriaCalculada == .vip
 
         let subtotal = redondear(Double(cantidad) * producto.precio)
         let descuento = esVIP ? redondear(subtotal * 0.10) : 0
