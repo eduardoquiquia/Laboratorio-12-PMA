@@ -187,3 +187,74 @@ enum FiltroVentas {
         return pedido
     }
 }
+
+// MARK: - Resumen del supervisor (A9) con Fetch Requests
+
+enum ConsultasResumen {
+
+    /// Suma del total de las ventas no anuladas del día que contiene `dia`.
+    static func vendidoDelDia(_ dia: Date, en contexto: NSManagedObjectContext) -> Double {
+        let pedido = FiltroVentas.pedido(vendedor: nil, periodo: .hoy, soloNoAnuladas: true, referencia: dia)
+        return ((try? contexto.fetch(pedido)) ?? []).reduce(0) { $0 + $1.total }
+    }
+
+    /// IGV de las ventas no anuladas del mes actual.
+    static func igvDelMes(en contexto: NSManagedObjectContext, referencia: Date = Date()) -> Double {
+        let pedido = FiltroVentas.pedido(vendedor: nil, periodo: .mes, soloNoAnuladas: true, referencia: referencia)
+        return ((try? contexto.fetch(pedido)) ?? []).reduce(0) { $0 + $1.igv }
+    }
+
+    /// Vendido (no anulado) en cada uno de los últimos 7 días, del más antiguo a hoy.
+    static func ultimos7Dias(en contexto: NSManagedObjectContext, referencia: Date = Date(),
+                             calendario: Calendar = .current) -> [(dia: Date, monto: Double)] {
+        let hoy = calendario.startOfDay(for: referencia)
+        let inicio = calendario.date(byAdding: .day, value: -6, to: hoy)!
+        let fin = calendario.date(byAdding: .day, value: 1, to: hoy)!
+
+        let pedido = Venta.fetchRequest()
+        pedido.predicate = NSPredicate(format: "fecha >= %@ AND fecha < %@ AND anulada == NO",
+                                       inicio as NSDate, fin as NSDate)
+        let ventas = (try? contexto.fetch(pedido)) ?? []
+
+        return (0..<7).map { desplazamiento in
+            let dia = calendario.date(byAdding: .day, value: desplazamiento, to: inicio)!
+            let monto = ventas
+                .filter { $0.fecha.map { calendario.isDate($0, inSameDayAs: dia) } ?? false }
+                .reduce(0) { $0 + $1.total }
+            return (dia, monto)
+        }
+    }
+
+    /// Ranking de vendedores del mes: suma de total (no anuladas) agrupada por vendedor, de mayor a menor.
+    static func rankingDelMes(en contexto: NSManagedObjectContext,
+                              referencia: Date = Date()) -> [(nombre: String, monto: Double)] {
+        let pedido = NSFetchRequest<NSDictionary>(entityName: "Venta")
+        var condiciones = [NSPredicate(format: "anulada == NO")]
+        if let porMes = PeriodoVenta.mes.predicado(referencia: referencia) {
+            condiciones.append(porMes)
+        }
+        pedido.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: condiciones)
+
+        let suma = NSExpressionDescription()
+        suma.name = "monto"
+        suma.expression = NSExpression(forFunction: "sum:", arguments: [NSExpression(forKeyPath: "total")])
+        suma.expressionResultType = .doubleAttributeType
+
+        pedido.resultType = .dictionaryResultType
+        pedido.propertiesToGroupBy = ["vendedor.nombre"]
+        pedido.propertiesToFetch = ["vendedor.nombre", suma]
+
+        let filas = (try? contexto.fetch(pedido)) ?? []
+        return filas
+            .map { (nombre: $0["vendedor.nombre"] as? String ?? "", monto: ($0["monto"] as? NSNumber)?.doubleValue ?? 0) }
+            .sorted { $0.monto > $1.monto }
+    }
+
+    /// Productos con stock bajo (5 o menos).
+    static func stockBajo(en contexto: NSManagedObjectContext) -> [Producto] {
+        let pedido = Producto.fetchRequest()
+        pedido.predicate = NSPredicate(format: "stock <= %d", 5)
+        pedido.sortDescriptors = [NSSortDescriptor(key: "stock", ascending: true)]
+        return (try? contexto.fetch(pedido)) ?? []
+    }
+}

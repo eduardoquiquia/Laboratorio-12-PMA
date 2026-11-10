@@ -15,7 +15,7 @@ enum TabBarPorRol {
         let pestanas: [UIViewController]
         if usuario.rol == Rol.supervisor {
             pestanas = [
-                envolver(pendiente("Resumen"), "Resumen", "chart.bar.fill"),
+                envolver(ResumenViewController(), "Resumen", "chart.bar.fill"),
                 envolver(VentasEquipoViewController(), "Ventas", "list.bullet.rectangle.fill"),
                 envolver(ProductosViewController(), "Productos", "shippingbox.fill"),
                 envolver(ClientesViewController(), "Clientes", "person.2.fill"),
@@ -39,13 +39,5 @@ enum TabBarPorRol {
         let nav = UINavigationController(rootViewController: pantalla)
         nav.tabBarItem = UITabBarItem(title: titulo, image: UIImage(systemName: icono), tag: 0)
         return nav
-    }
-
-    /// Pantalla vacía (solo título) para las pestañas que se implementan en etapas posteriores.
-    private static func pendiente(_ titulo: String) -> UIViewController {
-        let pantalla = UIViewController()
-        pantalla.title = titulo
-        pantalla.view.backgroundColor = .systemGroupedBackground
-        return pantalla
     }
 }
