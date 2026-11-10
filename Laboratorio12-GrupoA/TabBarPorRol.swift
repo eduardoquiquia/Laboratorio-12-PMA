@@ -16,7 +16,7 @@ enum TabBarPorRol {
         if usuario.rol == Rol.supervisor {
             pestanas = [
                 envolver(pendiente("Resumen"), "Resumen", "chart.bar.fill"),
-                envolver(pendiente("Ventas del equipo"), "Ventas", "list.bullet.rectangle.fill"),
+                envolver(VentasEquipoViewController(), "Ventas", "list.bullet.rectangle.fill"),
                 envolver(ProductosViewController(), "Productos", "shippingbox.fill"),
                 envolver(ClientesViewController(), "Clientes", "person.2.fill"),
                 envolver(CuentaViewController(), "Cuenta", "person.crop.circle.fill")

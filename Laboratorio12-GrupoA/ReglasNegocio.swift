@@ -67,6 +67,9 @@ struct CalculoVenta {
 enum ErrorVenta: Error {
     case stockInsuficiente(disponible: Int64)
     case noGuardada
+    case sinPermiso
+    case motivoVacio
+    case yaAnulada
 }
 
 enum OperacionesVenta {
@@ -101,6 +104,27 @@ enum OperacionesVenta {
             throw ErrorVenta.noGuardada
         }
         return venta
+    }
+
+    /// Anula la venta (solo supervisor): exige motivo, marca la venta como anulada,
+    /// guarda el motivo y devuelve las unidades al stock del producto.
+    /// Una venta anulada deja de contar en reportes y en la categoría del cliente.
+    static func anular(_ venta: Venta, motivo: String, en contexto: NSManagedObjectContext) throws {
+        let motivoLimpio = motivo.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard Sesion.compartida.esSupervisor else { throw ErrorVenta.sinPermiso }
+        guard !motivoLimpio.isEmpty else { throw ErrorVenta.motivoVacio }
+        guard !venta.anulada else { throw ErrorVenta.yaAnulada }
+
+        venta.anulada = true
+        venta.motivoAnulacion = motivoLimpio
+        venta.producto?.stock += venta.cantidad
+
+        do {
+            try contexto.save()
+        } catch {
+            contexto.rollback()
+            throw ErrorVenta.noGuardada
+        }
     }
 }
 
